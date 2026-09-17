@@ -13,8 +13,12 @@ if [ ! -x $B/ffmpeg ]; then
   fetch https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz /tmp/ff.tar.xz \
     && tar -xJf /tmp/ff.tar.xz -C /tmp && cp /tmp/ffmpeg-master-latest-linux64-gpl/bin/ff* $B/ && chmod +x $B/ff*
 fi
-# Chatterbox venv lives on the pod local disk; restore it from the volume tarball (seconds)
-[ -f $W/chatterbox/venv.tgz ] && [ ! -x /root/cbvenv/bin/python ] && { echo "[boot] extracting chatterbox venv"; tar xzf $W/chatterbox/venv.tgz -C /root; }
+# Chatterbox venv (several GB) unpacks from the volume IN THE BACKGROUND. It used to run in the foreground and
+# blocked the agent + ComfyUI for minutes: boot went from ~90 s to 247 s and one pod crossed the 300 s readiness
+# limit and was destroyed (2026-09-17). pod_episode.py waits for /root/cbvenv/.ready before the voice stage.
+if [ -f $W/chatterbox/venv.tgz ] && [ ! -f /root/cbvenv/.ready ]; then
+  ( tar xzf $W/chatterbox/venv.tgz -C /root && touch /root/cbvenv/.ready && echo "[boot] chatterbox venv ready" >> $G/logs/agent.out ) &
+fi
 export HF_HOME=$W/.hf PATH=$B:$V/bin:$PATH
 python3 $G/pod_agent.py 8000 >> $G/logs/agent.out 2>&1 &
 echo "[boot] agent on 8000"
