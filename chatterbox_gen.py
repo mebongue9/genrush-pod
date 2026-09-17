@@ -3,7 +3,7 @@
   /root/cbvenv/bin/python chatterbox_gen.py <ref.wav> <lines.json> <outdir>     lines.json = ["sentence", ...]
 Called by pod_episode.py --tts chatterbox. Settings: exaggeration 0.5, cfg_weight 0.5 (Chatterbox defaults; the WNBA clone was judged on these)."""
 import json, os, sys, time
-os.environ.setdefault("HF_HOME", "/workspace/.hf")
+os.environ.setdefault("HF_HOME", "/workspace/.hf"); os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"   # the RunPod image sets it to 1 but the venv has no hf_transfer
 import torch, torchaudio
 from chatterbox.tts import ChatterboxTTS
 ref, lines, out = sys.argv[1], json.load(open(sys.argv[2])), sys.argv[3]
