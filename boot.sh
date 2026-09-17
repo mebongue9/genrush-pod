@@ -13,7 +13,9 @@ if [ ! -x $B/ffmpeg ]; then
   fetch https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz /tmp/ff.tar.xz \
     && tar -xJf /tmp/ff.tar.xz -C /tmp && cp /tmp/ffmpeg-master-latest-linux64-gpl/bin/ff* $B/ && chmod +x $B/ff*
 fi
-export PATH=$B:$V/bin:$PATH
+# Chatterbox venv lives on the pod local disk; restore it from the volume tarball (seconds)
+[ -f $W/chatterbox/venv.tgz ] && [ ! -x /root/cbvenv/bin/python ] && { echo "[boot] extracting chatterbox venv"; tar xzf $W/chatterbox/venv.tgz -C /root; }
+export HF_HOME=$W/.hf PATH=$B:$V/bin:$PATH
 python3 $G/pod_agent.py 8000 >> $G/logs/agent.out 2>&1 &
 echo "[boot] agent on 8000"
 if [ ! -x $V/bin/python ] || [ ! -f $C/main.py ]; then
