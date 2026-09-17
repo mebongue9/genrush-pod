@@ -9,6 +9,9 @@ if [ -f /workspace/chatterbox/venv.tgz ] && [ ! -x /root/cbvenv/bin/python ]; th
 /root/cbvenv/bin/pip install -q -U pip wheel
 if ! /root/cbvenv/bin/python -c 'import chatterbox' 2>/dev/null; then
   echo "=== INSTALL chatterbox-tts==0.1.3 (pinned, MAR-1202 manifest) ==="
+  # python 3.12 image: a dependency (pkuseg) builds from source and imports numpy in setup.py; give it numpy + cython outside build isolation
+  /root/cbvenv/bin/pip install -q numpy cython setuptools
+  /root/cbvenv/bin/pip install -q --no-build-isolation pkuseg || echo "pkuseg no-isolation install failed, continuing"
   /root/cbvenv/bin/pip install -q chatterbox-tts==0.1.3 || { echo FAILED_PIP; exit 1; }
   echo "=== TAR venv -> volume ==="; tar czf /workspace/chatterbox/venv.tgz.tmp -C /root cbvenv && mv /workspace/chatterbox/venv.tgz.tmp /workspace/chatterbox/venv.tgz
 fi
