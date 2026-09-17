@@ -12,6 +12,23 @@ import json, os, subprocess, sys, urllib.request, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 TOKEN = os.environ.get("GENRUSH_AGENT_TOKEN", "")
+
+# THE LOCK (RENDER-CHECKLIST.md). This agent is the ONLY way into the pod: no SSH, no public IP.
+# It runs nothing except these approved entrypoints. Rendering only happens through pod_episode.py, which
+# enforces every checklist gate. A script that tries to go around the pipeline gets HTTP 403 here.
+# There is no override header and no admin flag. To allow something new, edit this list, commit, push.
+import re as _re
+APPROVED = [
+    _re.compile(r"^export PATH=/workspace/bin:/workspace/venv/bin:\$PATH; cd /workspace/genrush && "
+                r"/workspace/venv/bin/python -u pod_episode\.py episodes/[\w-]+\.json( --[\w-]+( [\w/.,-]+)?)*$"),
+    _re.compile(r"^touch /workspace/genrush/HOLD$"),
+    _re.compile(r"^rm -f /workspace/genrush/HOLD$"),
+    _re.compile(r"^bash /workspace/genrush/(setup_volume|h3_download|chatterbox_provision)\.sh( --rebuild)?$"),
+]
+
+
+def approved(cmd: str) -> bool:
+    return any(p.match(cmd.strip()) for p in APPROVED)
 LOGS = Path("/workspace/genrush/logs"); LOGS.mkdir(parents=True, exist_ok=True)
 
 
@@ -69,6 +86,9 @@ class H(BaseHTTPRequestHandler):
             p = Path(q["path"]); p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(body)
             return self._send(200, {"ok": True, "bytes": len(body)})
         if u.path == "/run":
+            if not approved(body.decode(errors="replace")):
+                return self._send(403, {"error": "BLOCKED by the render checklist: not an approved entrypoint. "
+                                                 "Render through genrush.py episode, never around it."})
             n = q["name"]; lp, ep = LOGS / f"{n}.log", LOGS / f"{n}.exit"
             ep.unlink(missing_ok=True)
             script = body.decode() + f"\necho $? > {ep}\n"
