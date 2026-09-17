@@ -16,4 +16,8 @@ fi
 export PATH=$B:$V/bin:$PATH
 python3 $G/pod_agent.py 8000 >> $G/logs/agent.out 2>&1 &
 echo "[boot] agent on 8000"
+if [ ! -x $V/bin/python ] || [ ! -f $C/main.py ]; then
+  echo "[boot] SETUP MODE: no venv/ComfyUI on this volume yet; agent only. Run pod_bootstrap.sh + pod_download_models.sh through the agent."
+  exec sleep infinity
+fi
 cd $C && exec $V/bin/python main.py --listen 0.0.0.0 --port 8188 --output-directory $W/output --preview-method auto 2>&1 | tee -a $G/comfy.log
