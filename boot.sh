@@ -45,4 +45,6 @@ if [ ! -x $V/bin/python ] || [ ! -f $C/main.py ]; then
   exec sleep infinity
 fi
 ev comfy_starting
+# log the moment ComfyUI actually answers, so "ComfyUI startup" is measured, not inferred
+( for i in $(seq 1 600); do curl -sf -m 2 http://127.0.0.1:8188/system_stats >/dev/null && { ev comfy_answering; break; }; sleep 1; done ) &
 cd $C && exec $V/bin/python main.py --listen 0.0.0.0 --port 8188 --output-directory $W/output --preview-method auto 2>&1 | tee -a $G/comfy.log
