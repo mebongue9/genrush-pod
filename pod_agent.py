@@ -38,7 +38,8 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 pass
             busy = any(not (LOGS / (f.name[:-4] + ".exit")).exists() for f in LOGS.glob("*.log"))
-            return self._send(200, {"ok": True, "comfy": comfy, "hold": Path("/workspace/genrush/HOLD").exists(), "busy": busy})
+            return self._send(200, {"ok": True, "comfy": comfy, "hold": Path("/workspace/genrush/HOLD").exists(), "busy": busy,
+                                    "setup": not (Path("/workspace/ComfyUI/main.py").exists() and Path("/workspace/venv/bin/python").exists())})
         if not self._auth(): return
         if u.path == "/get":
             p = Path(q["path"])
