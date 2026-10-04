@@ -23,7 +23,7 @@ APPROVED = [
                 r"/workspace/venv/bin/python -u pod_episode\.py episodes/[\w-]+\.json( --[\w-]+( [\w/.,-]+)?)*$"),
     _re.compile(r"^touch /workspace/genrush/HOLD$"),
     _re.compile(r"^rm -f /workspace/genrush/HOLD$"),
-    _re.compile(r"^bash /workspace/genrush/(setup_volume|h3_download|chatterbox_provision)\.sh( --rebuild)?$"),
+    _re.compile(r"^bash /workspace/genrush/(setup_volume|h3_download|chatterbox_provision|video_models_download)\.sh( --rebuild)?$"),
 ]
 
 
