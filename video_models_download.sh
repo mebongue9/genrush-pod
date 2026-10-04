@@ -7,6 +7,10 @@ command -v aria2c >/dev/null || { echo "installing aria2 (container disk is fres
 TOK=$(cat /workspace/genrush/.hf_token 2>/dev/null || true)
 cd /workspace/models
 echo "BEFORE $(df -h /workspace | tail -1)"
+# The volume is shared with the space pipeline (250 GB). Refuse to start unless these models fit with 20 GB to spare.
+USED=$(du -s --block-size=1G /workspace 2>/dev/null | cut -f1); NEED=75; QUOTA=${VOLUME_GB:-250}
+echo "volume: ${USED} GB used of ${QUOTA} GB, this download needs about ${NEED} GB"
+if [ $((USED + NEED + 20)) -gt "$QUOTA" ]; then echo "NOT ENOUGH ROOM: stopping before downloading anything"; exit 3; fi
 dl(){ mkdir -p "$1"; [ -s "$1/$2" ] && [ ! -e "$1/$2.aria2" ] && { echo "skip $2"; return; }; echo "$(date +%T) GET $2"
       if [ "${4:-}" = gated ]; then aria2c -q -x8 -s8 -c --file-allocation=none --header="Authorization: Bearer $TOK" -d "$1" -o "$2" "$3"; else aria2c -q -x8 -s8 -c --file-allocation=none -d "$1" -o "$2" "$3"; fi \
       && echo "$(date +%T) OK $2 $(du -h "$1/$2" | cut -f1)" || echo "FAILED $2"; }
