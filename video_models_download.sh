@@ -21,8 +21,9 @@ ltx|diffusion_models|ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safete
 ltx|text_encoders|gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors|$L/text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors|gated
 ltx|vae|ltx-2.5-video-vae-bf16.safetensors|$L/vae/ltx-2.5-video-vae-bf16.safetensors|gated
 ltx|vae|ltx-2.5-audio-vae-bf16.safetensors|$L/vae/ltx-2.5-audio-vae-bf16.safetensors|gated
+ltx|text_encoders|gemma4_e2b_it_int8_convrot.safetensors|https://huggingface.co/Comfy-Org/gemma-4/resolve/main/text_encoders/gemma4_e2b_it_int8_convrot.safetensors|
 ltx|/workspace/ComfyUI/models/latent_upscale_models|ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors|$L/latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors|gated"
-need_gb(){ case "$1" in wan) echo 36;; ltx) echo 41;; *) echo 0;; esac; }
+need_gb(){ case "$1" in wan) echo 36;; ltx) echo 46;; *) echo 0;; esac; }
 used_gb(){ du -s --block-size=1G /workspace 2>/dev/null | cut -f1; }
 RC=0
 echo "plan: $PLAN"
